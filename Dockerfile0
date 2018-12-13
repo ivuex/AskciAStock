@@ -1,0 +1,28 @@
+FROM python:3.7-alpine3.8
+
+ENV PATH /usr/local/bin:$PATH
+ENV LANG C.UTF-8
+
+# Enable sshd service
+ARG         ALPINE_VERSION=${ALPINE_VERSION:-3.8}
+LABEL       maintainer="https://github.com/ivuex"
+ARG         OPENSSH_VERSION=${OPENSSH_VERSION:-7.7_p1-r3}
+ENV         OPENSSH_VERSION=${OPENSSH_VERSION} \
+            ROOT_PASSWORD=root \
+            KEYPAIR_LOGIN=false
+ADD         Dockerfile.d/sshd.sh /etc/sshd.sh
+RUN         apk update && apk upgrade && apk add --no-cache openssh=${OPENSSH_VERSION} \
+		        && chmod +x /etc/sshd.sh \
+		        && mkdir -p /root/.ssh \
+		        && rm -rf /var/cache/apk/* /tmp/*
+EXPOSE      22
+VOLUME      ["/etc/ssh"]
+RUN nohup /etc/sshd.sh &
+
+# deploy current crawler
+RUN python3 --version
+RUN apk add --no-cache --virtual py3-pip
+RUN apk add --no-cache curl git tar \
+ python3-dev gcc openssl-dev openssl libressl libc-dev linux-headers libffi-dev libxml2-dev libxml2 libxslt-dev
+RUN pip install scrapy==1.5.1
+

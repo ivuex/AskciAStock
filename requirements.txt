@@ -1,0 +1,4 @@
+scrapy==1.5.1
+scrapy-mongodb==0.12.0
+requests==2.20.1
+scrapy-redis==0.6.8
